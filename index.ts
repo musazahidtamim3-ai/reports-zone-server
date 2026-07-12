@@ -75,6 +75,17 @@ async function startServer() {
           }
      });
 
+     app.get("/api/reports/:userId", async (req: Request, res: Response) => {
+          try {
+               const query = { userId: req.params.userId };
+               const reports = await reportsCollection.find(query).toArray();
+               res.send(reports);
+          } catch (error) {
+               console.error(error);
+               res.status(500).send({ message: "Something went wrong" });
+          }
+     });  
+
      app.listen(port, () => {
           console.log(` Server Running on http://localhost:${port}`);
      });
