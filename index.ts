@@ -25,6 +25,7 @@ async function startServer() {
 
      const db = client.db(process.env.DB_NAME);
      const usersCollection = db.collection("users");
+     const reportsCollection = db.collection("reports");
 
      app.get("/", (req: Request, res: Response) => {
           res.send("Reports Zone Server is Running...");
@@ -47,6 +48,27 @@ async function startServer() {
           try {
                const users = await usersCollection.find().toArray();
                res.send(users);
+          } catch (error) {
+               console.error(error);
+               res.status(500).send({ message: "Something went wrong" });
+          }
+     });
+
+     app.post("/api/reports", async (req: Request, res: Response) => {
+          try {
+               const report = req.body; 
+               const result = await reportsCollection.insertOne(report);
+               res.status(201).send(result);
+          } catch (error) {
+               console.error(error);
+               res.status(500).send({ message: "Something went wrong" });
+          }
+     });
+
+     app.get("/api/reports", async (req: Request, res: Response) => {
+          try {
+               const reports = await reportsCollection.find().toArray();
+               res.send(reports);
           } catch (error) {
                console.error(error);
                res.status(500).send({ message: "Something went wrong" });
