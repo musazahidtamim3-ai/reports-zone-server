@@ -2,6 +2,7 @@ import express, { type Request, type Response } from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import { MongoClient, ServerApiVersion } from "mongodb";
+import { ObjectId } from "mongodb";
 
 dotenv.config();
 
@@ -109,6 +110,29 @@ async function startServer() {
                res.status(500).send({ message: "Something went wrong" });
           }
      });  
+
+     
+
+     app.delete("/api/reports/:id", async (req: Request, res: Response) => {
+          try {
+               const { id } = req.params;
+
+               if (!ObjectId.isValid(id)) {
+                    return res.status(400).send({ message: "Invalid report ID" });
+               }
+
+               const result = await reportsCollection.deleteOne({ _id: new ObjectId(id) });
+
+               if (result.deletedCount === 0) {
+                    return res.status(404).send({ message: "Report not found" });
+               }
+
+               res.send({ message: "Report deleted successfully" });
+          } catch (error) {
+               console.error(error);
+               res.status(500).send({ message: "Something went wrong" });
+          }
+     });
 
      app.listen(port, () => {
           console.log(` Server Running on http://localhost:${port}`);
