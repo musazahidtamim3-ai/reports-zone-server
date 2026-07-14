@@ -119,12 +119,13 @@ async function startServer() {
      app.delete("/api/reports/:id", async (req: Request, res: Response) => {
           try {
                const { id } = req.params;
+               const reportId = id as string;
 
-               if (!ObjectId.isValid(id)) {
+               if (!ObjectId.isValid(reportId)) {
                     return res.status(400).send({ message: "Invalid report ID" });
                }
 
-               const result = await reportsCollection.deleteOne({ _id: new ObjectId(id) });
+               const result = await reportsCollection.deleteOne({ _id: new ObjectId(reportId) });
 
                if (result.deletedCount === 0) {
                     return res.status(404).send({ message: "Report not found" });
