@@ -82,7 +82,10 @@ async function startServer() {
      app.post("/api/reports", async (req: Request, res: Response) => {
           try {
                const report = req.body; 
-               const result = await reportsCollection.insertOne(report);
+               const result = await reportsCollection.insertOne({
+                    ...report,
+                    createdAt: new Date(),
+               });
                res.status(201).send(result);
           } catch (error) {
                console.error(error);
@@ -128,6 +131,43 @@ async function startServer() {
                }
 
                res.send({ message: "Report deleted successfully" });
+          } catch (error) {
+               console.error(error);
+               res.status(500).send({ message: "Something went wrong" });
+          }
+     });
+
+     app.get("/api/reports/:userId/weekly-stats", async (req: Request, res: Response) => {
+          try {
+               const { userId } = req.params;
+
+               const sevenDaysAgo = new Date();
+               sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6);
+               sevenDaysAgo.setHours(0, 0, 0, 0);
+
+               const dailyStats = await reportsCollection
+                    .aggregate([
+                         {
+                              $match: {
+                                   creatorId: userId,
+                                   createdAt: { $gte: sevenDaysAgo },
+                              },
+                         },
+                         {
+                              $group: {
+                                   _id: {
+                                        year: { $year: "$createdAt" },
+                                        month: { $month: "$createdAt" },
+                                        day: { $dayOfMonth: "$createdAt" },
+                                   },
+                                   reports: { $sum: 1 },
+                              },
+                         },
+                         { $sort: { "_id.year": 1, "_id.month": 1, "_id.day": 1 } },
+                    ])
+                    .toArray();
+
+               res.send(dailyStats);
           } catch (error) {
                console.error(error);
                res.status(500).send({ message: "Something went wrong" });
