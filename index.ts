@@ -54,6 +54,30 @@ async function startServer() {
           }
      });
 
+     app.get("/api/reports/top-contributors", async (req: Request, res: Response) => {
+          try {
+               const topContributors = await reportsCollection
+                    .aggregate([
+                         {
+                              $group: {
+                                   _id: "$creatorId",
+                                   name: { $first: "$creatorName" },
+                                   image: { $first: "$creatorPhoto" },
+                                   reportCount: { $sum: 1 },
+                              },
+                         },
+                         { $sort: { reportCount: -1 } },
+                         { $limit: 4 },
+                    ])
+                    .toArray();
+
+               res.send(topContributors);
+          } catch (error) {
+               console.error(error);
+               res.status(500).send({ message: "Something went wrong" });
+          }
+     });
+
      app.post("/api/reports", async (req: Request, res: Response) => {
           try {
                const report = req.body; 
@@ -77,7 +101,7 @@ async function startServer() {
 
      app.get("/api/reports/:userId", async (req: Request, res: Response) => {
           try {
-               const query = { userId: req.params.userId };
+               const query = { creatorId: req.params.userId };
                const reports = await reportsCollection.find(query).toArray();
                res.send(reports);
           } catch (error) {
