@@ -114,7 +114,7 @@ app.get("/api/reports/:id", async (req: Request, res: Response) => {
           res.send(report);
      } catch (error) {
           console.error(error);
-          res.status(500).send({ message: "Something went wrong" });
+          res.status(500).send({ message: "Something went wrong. try again later" });
      }
 });
 
