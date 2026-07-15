@@ -106,6 +106,18 @@ app.get("/api/reports", async (req: Request, res: Response) => {
      }
 });
 
+app.get("/api/reports/:id", async (req: Request, res: Response) => {
+     try {
+          const { id } = req.params;
+          const { reportsCollection } = await getCollections();
+          const report = await reportsCollection.findOne({ _id: new ObjectId(id) });
+          res.send(report);
+     } catch (error) {
+          console.error(error);
+          res.status(500).send({ message: "Something went wrong" });
+     }
+});
+
 app.get("/api/reports/:userId", async (req: Request, res: Response) => {
      try {
           const { reportsCollection } = await getCollections();
